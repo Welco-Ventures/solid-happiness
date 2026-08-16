@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Limitless Equipment Sourcing</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 40px; max-width: 900px; margin: auto }
+      .btn { background:#d71920;color:#fff;padding:12px 18px;border-radius:6px;cursor:pointer }
+    </style>
+  </head>
+  <body>
+    <h1>Limitless Equipment Sourcing</h1>
+    <p>We can source engines, transmissions, heavy equipment and parts. Use the button below to pay a sample fee (test mode).</p>
+
+    <button id="checkout" class="btn">Pay $100 (Test)</button>
+
+    <script>
+      // Replace with your publishable key when deploying
+      const stripe = Stripe('pk_test_REPLACE_WITH_YOUR_PUBLISHABLE_KEY');
+
+      document.getElementById('checkout').addEventListener('click', async () => {
+        const resp = await fetch('/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: [{ name: 'Equipment Search Fee', amount: 10000, quantity: 1 }] })
+        });
+        const data = await resp.json();
+        if (data.id) {
+          const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
+          if (error) {
+            console.error(error);
+            alert(error.message || 'Stripe error');
+          }
+        } else {
+          alert('Failed to create checkout session');
+        }
+      });
+    </script>
+  </body>
+</html>
