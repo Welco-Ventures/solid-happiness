@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Limitless Equipment Sourcing, LLC | We Can Source It</title>
+
+  <meta
+    name="description"
+    content="Limitless Equipment Sourcing, LLC helps customers source engines, transmissions, heavy equipment, industrial equipment and parts. Call or WhatsApp Fabian at 352-722-4353."
+  >
+
+  <meta name="theme-color" content="#111111">
+
+  <style>
+    /* (styles unchanged) */
+  </style>
+</head>
+
+<body>
+
+<header class="nav">
+
+  <div class="brand">
+    LIMITLESS
+    <span>EQUIPMENT SOURCING, LLC</span>
+  </div>
+
+  <nav class="nav-links">
+    <a href="#engines">Engines</a>
+    <a href="#equipment">Equipment</a>
+    <a href="#process">How It Works</a>
+    <a href="#quote">Get a Quote</a>
+  </nav>
+
+  <a
+    class="btn"
+    href="https://wa.me/13527224353?text=Hello%20Fabian%2C%20I%20need%20help%20sourcing%20equipment."
+    target="_blank"
+  >
+    WhatsApp Fabian
+  </a>
+
+</header>
+
+
+<section class="hero">
+
+  <div class="hero-content">
+
+    <p class="eyebrow">
+      ENGINES • EQUIPMENT • PARTS • SOURCING
+    </p>
+
+    <h1>
+      We Can Source It.
+    </h1>
+
+    <p class="hero-description">
+      Can't find the engine, transmission, equipment or part you need?
+      Send us the details and we'll search our supplier network for the
+      right sourcing options.
+    </p>
+
+    <div class="hero-buttons">
+
+      <a
+        class="btn"
+        href="#quote"
+      >
+        REQUEST A QUOTE
+      </a>
+
+      <a
+        class="btn btn-outline"
+        href="https://wa.me/13527224353?text=Hello%20Fabian%2C%20I%20need%20an%20equipment%20quote."
+        target="_blank"
+      >
+        WHATSAPP 352-722-4353
+      </a>
+
+      <!-- Stripe Checkout button inserted -->
+      <button id="stripe-checkout-btn" class="btn">Pay $100</button>
+
+    </div>
+
+    <p class="contact-line">
+      Fabian — Equipment Sourcing • 352-722-4353
+    </p>
+
+  </div>
+
+
+  <div class="hero-image">
+
+    <img
+      src="assets/heavy-equipment.jpg"
+      alt="Heavy equipment available for sourcing"
+    >
+
+  </div>
+
+</section>
+
+
+<!-- rest of page unchanged... -->
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+  async function initStripeButton() {
+    try {
+      const cfg = await fetch('/config').then(r => r.json());
+      if (!cfg.publishableKey) {
+        console.error('Publishable key not set on /config');
+        return;
+      }
+
+      const stripe = Stripe(cfg.publishableKey);
+      const btn = document.getElementById('stripe-checkout-btn');
+      btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        btn.textContent = 'Redirecting...';
+        const resp = await fetch('/create-checkout-session', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ items: [{ name: 'Equipment Search Fee', amount: 10000, quantity: 1 }] })
+        });
+        const data = await resp.json();
+        if (data.id) {
+          const { error } = await stripe.redirectToCheckout({ sessionId: data.id });
+          if (error) {
+            console.error(error);
+            alert(error.message || 'Stripe error');
+            btn.disabled = false;
+            btn.textContent = 'Pay $100';
+          }
+        } else {
+          alert('Failed to create checkout session');
+          btn.disabled = false;
+          btn.textContent = 'Pay $100';
+        }
+      });
+    } catch (err) {
+      console.error('Error initializing Stripe button', err);
+    }
+  }
+  initStripeButton();
+</script>
+
+</body>
+</html>
